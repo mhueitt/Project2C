@@ -1,0 +1,140 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+# Introduction 
+
+Scientific Question: How does antiviral drugs specifically statins play a role in the outcome and mortality rate of SARS-CoV-2?
+
+
+Scientific Hypothesis: Hence, if recent studies suggested that statin therapy in COVID-19 patients indicated  a better outcome and a lower risk of mortality then statins can bind to multiple target proteins in SARS-CoV-2 which can contribute to the antiviral efficacy of the drug. 
+
+Source: Ghosh, D., Ghosh Dastidar, D., Roy, K. et al. Computational prediction of the molecular mechanism of statin group of drugs against SARS-CoV-2 pathogenesis. Sci Rep 12, 6241 (2022). https://doi.org/10.1038/s41598-022-09845-y
+
+# Package Descriptions 
+
+The following are a list of packages need to be loaded throughout this project:  
+
+1. BioConductor:
+2. Biostrings:
+3. seqinr:
+4. msa:
+5. Bio3D
+
+```{r}
+library(BiocManager)
+BiocManager::install("msa")
+BiocManager::install("muscle")
+library(Biostrings)
+library(seqinr)
+library(msa)
+```
+
+
+
+## Multiple Sequence Alignment 
+
+In the following chunk of code, the following packages are loaded that are necessary to complete multiple sequence alignment. 
+
+```{r}
+# Install package BiocManager and msa 
+if (!requireNamespace("BiocManager", quietly=TRUE))
+install.packages("BiocManager")
+BiocManager::install("msa")
+
+library(msa)
+
+# To make sure all functionalities are used 
+
+system.file("tex", "texshade.sty", package="msa")
+
+
+
+```
+
+I obtained the data for SPIKE protein from UNIPROT. The fasta file includes the spike protein in SARS-CoV-2 as well as the spike protein related to other coronaviruses from other species such as SARS-CoV, MHV-A59, and HCoV-OC43. 
+
+```{r}
+SPIKE_unaligned <- readAAStringSet("SPIKEprotein.fasta.gz")
+
+SPIKE_unaligned
+
+SPIKE_read <- read.fasta(file = "SPIKEprotein.fasta.gz")
+SPIKE_read
+
+length(SPIKE_read)
+
+
+x <- 1:length(SPIKE_read)
+
+
+```
+
+```{r}
+myFirstAlignment <- msa(SPIKE_unaligned)
+myFirstAlignment
+
+```
+```{r}
+print(myFirstAlignment, show="complete")
+```
+```{r}
+msaPrettyPrint(myFirstAlignment, y=c(164, 213), output="asis",
+showNames="none", showLogo="none", askForOverwrite=FALSE)
+
+
+```
+## Heat map
+
+Definition of Heat Map and Purpose 
+
+```{r}
+library(Biostrings)
+library(ggmsa)
+protein_sequences <- system.file("extdata", "sample.fasta", package = "ggmsa")
+aln = readAAMultipleAlignment(protein_sequences)
+ggmsa(protein_sequences, start = 265, end = 300) 
+
+```
+
+Source of Code: https://bioinformatics.stackexchange.com/questions/13414/how-can-i-plot-multiple-sequence-alignment-in-r-as-a-heatmap 
+
+```{r}
+library(Biostrings)
+library(ggmsa)
+protein_sequences <- system.file("extdata", "sample.fasta", package = "ggmsa")
+aln = readAAMultipleAlignment(protein_sequences)
+ggmsa(protein_sequences, start = 265, end = 300) 
+
+```
+
+
+
+## Sequence Logos 
+
+
+```{r}
+msaPrettyPrint(myFirstAlignment, output="asis", y=c(164, 213),
+subset=c(1:6), showNames="none", showLogo="top",
+logoColors="rasmol", shadingMode="similar",
+showLegend=FALSE, askForOverwrite=FALSE)
+
+```
+
+## PDB DATABASE 
+
+```{r}
+install.packages("bio3d", dependencies=TRUE)
+
+pdb <- read.pdb('6xm5')
+
+## Automatically identify what is the protein and what is the ligand
+bs <- binding.site(pdb)
+
+# Print the residues & save the resnumbers to a vector for later use
+bs_resnumbers <- bs$resno
+
+bs$resnames
+```
+
